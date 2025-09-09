@@ -1,0 +1,7 @@
+mcs5606039113-openrc.sh
+.idea
+terraform.tfvars
+.terraform.lock.hcl
+.terraform/
+terraform.tfstate
+/ai-issue-genius-cluster_kubeconfig.yaml
