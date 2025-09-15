@@ -119,6 +119,7 @@ kubectl create secret docker-registry gitlab-registry \
   --docker-email=fedor.buzinov@gmail.com \
   -n ai-issue-genius
 
+kubectl apply -f redirect-ingress.yaml
 
 kauthproxy -n kubernetes-dashboard https://kubernetes-dashboard.svc
 

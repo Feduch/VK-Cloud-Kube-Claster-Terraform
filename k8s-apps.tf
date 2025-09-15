@@ -150,122 +150,130 @@ resource "kubernetes_service_v1" "postgres" {
 }
 
 # # 4. Развертывание AI Issue Genius Server
-# resource "kubernetes_deployment_v1" "ai_issue_genius_server" {
-#   metadata {
-#     name      = "ai-issue-genius-server"
-#     namespace = kubernetes_namespace_v1.ai_issue_genius_ns.metadata[0].name
-#     labels = {
-#       app = "ai-issue-genius-server"
-#     }
-#   }
-#
-#   spec {
-#     replicas = 1
-#     selector {
-#       match_labels = {
-#         app = "ai-issue-genius-server"
-#       }
-#     }
-#     template {
-#       metadata {
-#         labels = {
-#           app = "ai-issue-genius-server"
-#         }
-#       }
-#       spec {
-#         image_pull_secrets {
-#           name = "gitlab-registry"
-#         }
-#
-#         container {
-#           name  = "server"
-#           image = "registry.gitlab.com/ai8595334/ai-issue-genius/ai-issue-genius-server"
-#           # Укажите необходимые переменные среды для подключения к БД
-#           env {
-#             name  = "DB_HOST"
-#             value = kubernetes_service_v1.postgres.metadata[0].name # Используем имя сервиса
-#           }
-#           env {
-#             name  = "DB_PORT"
-#             value = "5432"
-#           }
-#           env {
-#             name  = "DB_NAME"
-#             value = "ai_issue_genius"
-#           }
-#           env {
-#             name  = "DB_USER"
-#             value = "ai_issue_genius"
-#           }
-#           env {
-#             name  = "DB_PASSWORD"
-#             value = "ai_issue_genius"
-#           }
-#         }
-#       }
-#     }
-#   }
-# }
-#
-# # Сервис для доступа к AI Issue Genius Server (если нужен)
-# resource "kubernetes_service_v1" "ai_issue_genius_server_svc" {
-#   metadata {
-#     name      = "ai-issue-genius-server-service"
-#     namespace = kubernetes_namespace_v1.ai_issue_genius_ns.metadata[0].name
-#   }
-#   spec {
-#     selector = {
-#       app = kubernetes_deployment_v1.ai_issue_genius_server.spec[0].template[0].metadata[0].labels.app
-#     }
-#     port {
-#       port        = 80 # Укажите правильный порт, который слушает ваш server
-#       target_port = 80 # Укажите правильный порт контейнера
-#     }
-#     type = "ClusterIP" # Или LoadBalancer/NodePort для доступа снаружи
-#   }
-# }
-#
-# # 5. Развертывание AI Issue Genius Agent
-# resource "kubernetes_deployment_v1" "ai_issue_genius_agent" {
-#   metadata {
-#     name      = "ai-issue-genius-agent"
-#     namespace = kubernetes_namespace_v1.ai_issue_genius_ns.metadata[0].name
-#     labels = {
-#       app = "ai-issue-genius-agent"
-#     }
-#   }
-#
-#   spec {
-#     replicas = 1
-#     selector {
-#       match_labels = {
-#         app = "ai-issue-genius-agent"
-#       }
-#     }
-#     template {
-#       metadata {
-#         labels = {
-#           app = "ai-issue-genius-agent"
-#         }
-#       }
-#       spec {
-#         image_pull_secrets {
-#           name = "gitlab-registry"
-#         }
-#
-#         container {
-#           name  = "agent"
-#           image = "registry.gitlab.com/ai8595334/ai-issue-genius/ai-issue-genius-agent"
-#           # Укажите необходимые переменные среды для подключения к server
-#           env {
-#             name  = "SERVER_URL"
-#             value = "http://ai-issue-genius-server-service:80" # Используем имя сервиса
-#           }
-#         }
-#       }
-#     }
-#   }
-# }
+resource "kubernetes_deployment_v1" "ai_issue_genius_server" {
+  metadata {
+    name      = "ai-issue-genius-server"
+    namespace = kubernetes_namespace_v1.ai_issue_genius_ns.metadata[0].name
+    labels = {
+      app = "ai-issue-genius-server"
+    }
+  }
+
+  spec {
+    replicas = 1
+    selector {
+      match_labels = {
+        app = "ai-issue-genius-server"
+      }
+    }
+    template {
+      metadata {
+        labels = {
+          app = "ai-issue-genius-server"
+        }
+      }
+      spec {
+        image_pull_secrets {
+          name = "gitlab-registry"
+        }
+
+        container {
+          name  = "server"
+          image = "registry.gitlab.com/ai8595334/ai-issue-genius/ai-issue-genius-server"
+          port {
+            container_port = 9000
+          }
+          # Укажите необходимые переменные среды для подключения к БД
+          env {
+            name  = "DB_HOST"
+            value = kubernetes_service_v1.postgres.metadata[0].name # Используем имя сервиса
+          }
+          env {
+            name  = "DB_PORT"
+            value = "5432"
+          }
+          env {
+            name  = "DB_NAME"
+            value = "ai_issue_genius"
+          }
+          env {
+            name  = "DB_USER"
+            value = "ai_issue_genius"
+          }
+          env {
+            name  = "DB_PASSWORD"
+            value = "ai_issue_genius"
+          }
+        }
+      }
+    }
+  }
+}
+
+# Сервис для доступа к AI Issue Genius Server (если нужен)
+resource "kubernetes_service_v1" "ai_issue_genius_server_svc" {
+  metadata {
+    name      = "ai-issue-genius-server-service"
+    namespace = kubernetes_namespace_v1.ai_issue_genius_ns.metadata[0].name
+  }
+
+  spec {
+    selector = {
+      app = kubernetes_deployment_v1.ai_issue_genius_server.spec[0].template[0].metadata[0].labels.app
+    }
+
+    port {
+      name        = "http"
+      port        = 80
+      target_port = 9000
+      protocol    = "TCP"
+    }
+
+    type = "ClusterIP" # Для использования с Ingress
+  }
+}
+
+# 5. Развертывание AI Issue Genius Agent
+resource "kubernetes_deployment_v1" "ai_issue_genius_agent" {
+  metadata {
+    name      = "ai-issue-genius-agent"
+    namespace = kubernetes_namespace_v1.ai_issue_genius_ns.metadata[0].name
+    labels = {
+      app = "ai-issue-genius-agent"
+    }
+  }
+
+  spec {
+    replicas = 1
+    selector {
+      match_labels = {
+        app = "ai-issue-genius-agent"
+      }
+    }
+    template {
+      metadata {
+        labels = {
+          app = "ai-issue-genius-agent"
+        }
+      }
+      spec {
+        image_pull_secrets {
+          name = "gitlab-registry"
+        }
+
+        container {
+          name  = "agent"
+          image = "registry.gitlab.com/ai8595334/ai-issue-genius/ai-issue-genius-agent"
+          # Укажите необходимые переменные среды для подключения к server
+          env {
+            name  = "SERVER_URL"
+            value = "http://ai-issue-genius-server-service:80" # Используем имя сервиса
+          }
+        }
+      }
+    }
+  }
+}
 
 resource "kubernetes_persistent_volume_claim_v1" "postgres_pvc" {
   metadata {
