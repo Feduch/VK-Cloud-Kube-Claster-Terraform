@@ -269,6 +269,47 @@ resource "kubernetes_deployment_v1" "ai_issue_genius_agent" {
             name  = "SERVER_URL"
             value = "http://ai-issue-genius-server-service:80" # Используем имя сервиса
           }
+
+          env {
+            name  = "DEEPSEEK_API_KEY"
+            value_from {
+              secret_key_ref {
+                name = "api-deepseek-token"
+                key  = "token" # Ключ в Secret
+              }
+            }
+          }
+
+          env {
+            name  = "TELEGRAM_TOKEN"
+            value_from {
+              secret_key_ref {
+                name = "telegram-token"
+                key  = "token" # Ключ в Secret
+              }
+            }
+          }
+
+          env {
+            name  = "TELEGRAM_ID"
+            value_from {
+              secret_key_ref {
+                name = "telegram-id"
+                key  = "token" # Ключ в Secret
+              }
+            }
+          }
+
+          env {
+            name  = "GITLAB_TOKEN"
+            value_from {
+              secret_key_ref {
+                name = "gitlab-token"
+                key  = "token" # Ключ в Secret
+              }
+            }
+          }
+
         }
       }
     }

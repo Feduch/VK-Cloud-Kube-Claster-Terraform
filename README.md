@@ -5,14 +5,14 @@
 Создается кластер Kubernetes
 
 # Получить cluster_kubeconfig
-export KUBECONFIG=/home/solar/.kube/ai-issue-genius-cluster_kubeconfig.yaml 
+export KUBECONFIG=~/.kube/ai-issue-genius-cluster_kubeconfig.yaml 
 
 # Добавить секреты для доступа к образам на GitLab
 kubectl create secret docker-registry gitlab-registry \
   --docker-server=registry.gitlab.com \
-  --docker-username=fedor.buzinov@gmail.com \
+  --docker-username=username \
   --docker-password=glpat-*** \
-  --docker-email=fedor.buzinov@gmail.com \
+  --docker-email=email \
   -n ai-issue-genius
 
 # Настроить редирект на API
@@ -28,3 +28,5 @@ kubectl -n prometheus-monitoring get secret kube-prometheus-stack-grafana -o jso
 # Прочее
 kubectl config set-context --current --namespace=ai-issue-genius
 kubectl describe pod postgres-54dfd9b479-t2cnd -n ai-issue-genius
+
+
