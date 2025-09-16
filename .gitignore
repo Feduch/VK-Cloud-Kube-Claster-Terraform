@@ -5,3 +5,4 @@ terraform.tfvars
 .terraform/
 terraform.tfstate
 /ai-issue-genius-cluster_kubeconfig.yaml
+.terraform.tfstate.lock.info
