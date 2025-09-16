@@ -22,7 +22,9 @@ kubectl apply -f redirect-ingress.yaml
 kauthproxy -n kubernetes-dashboard https://kubernetes-dashboard.svc
 
 # prometheus
+## Запуск
 kubectl -n prometheus-monitoring port-forward service/kube-prometheus-stack-grafana 8001:80
+## Получить пароль к дашборку
 kubectl -n prometheus-monitoring get secret kube-prometheus-stack-grafana -o jsonpath='{.data.admin-password}' | base64 --decode
 
 # Прочее
